@@ -79,8 +79,8 @@ feeder_worker.py    worker que processa a fila de downloads em segundo plano
 jobs_db.py            persistência da fila de downloads (SQLite)
 templates/            páginas HTML (biblioteca, série, leitor, admin, login)
 static/                  CSS, JavaScript e ícones do PWA
-comics/                 biblioteca de HQs (não versionada)
-cache/                   páginas extraídas e banco de jobs (não versionado)
+comics/                 biblioteca de HQs (pasta versionada vazia; conteúdo não é versionado)
+cache/                   páginas extraídas e banco de jobs (pasta versionada vazia; conteúdo não é versionado)
 ```
 
 ## Aviso
