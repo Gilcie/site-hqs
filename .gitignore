@@ -1,0 +1,20 @@
+# Segredos e configuração local
+.env
+
+# Biblioteca de HQs e cache gerado (conteúdo, não código)
+/comics/
+/cache/
+*.cbr
+*.cbz
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Configuração local de editor/IDE
+.claude/
+
+# Outros
+.DS_Store
+Thumbs.db

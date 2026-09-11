@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#16213e">
+  <title>HQ Reader</title>
+  <link rel="stylesheet" href="/static/css/style.css?v={{ asset_v }}">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+</head>
+<body>
+
+<div class="header">
+  <h1>HQ Reader</h1>
+  <div class="header-actions">
+    <button class="btn-icon" id="btn-filter" title="Filtrar por editora">&#9776;</button>
+    <button class="btn-icon" id="btn-refresh" title="Atualizar">&#8635;</button>
+  </div>
+</div>
+
+<!-- Drawer de filtro -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<div class="filter-drawer" id="filter-drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">Filtrar por editora</div>
+  <div class="publisher-chips" id="publisher-chips">
+    <button class="chip chip-active" data-pub="">Todas</button>
+  </div>
+</div>
+
+<div id="continue-reading"></div>
+
+<div class="search-bar">
+  <input type="search" id="search-input" placeholder="Buscar série ou volume..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+</div>
+
+<div class="library" id="library">
+  <div class="loading">
+    <div class="loading-spinner"></div>
+    <p>Carregando biblioteca...</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="install-banner" id="install-banner" style="display:none">
+  <span>&#128241; Adicione à Tela Inicial para tela cheia</span>
+  <button id="btn-install-close">&#10005;</button>
+</div>
+
+<script src="/static/js/library.js?v={{ asset_v }}"></script>
+</body>
+</html>

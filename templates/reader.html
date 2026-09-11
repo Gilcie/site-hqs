@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <title>{{ title }} — HQ Reader</title>
+  <link rel="stylesheet" href="/static/css/style.css?v={{ asset_v }}">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="theme-color" content="#000000">
+</head>
+<body>
+
+<div class="reader-wrap" id="reader-wrap">
+
+  <div class="reader-header" id="reader-header">
+    <a href="/" class="btn-icon" title="Voltar">&#8592;</a>
+    <span class="reader-title" id="reader-title">{{ title }}</span>
+    <button class="btn-icon" id="btn-mode" title="Modo de leitura">&#8597;</button>
+    <button class="btn-icon" id="btn-fullscreen" title="Tela cheia">&#9974;</button>
+  </div>
+
+  <!-- Conteudo do leitor (imagens ou PDF) -->
+  <div class="reader-main" id="reader-main">
+    <div class="loading" style="position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);">
+      <div class="loading-spinner"></div>
+      <p>Carregando...</p>
+    </div>
+  </div>
+
+  <div class="reader-footer" id="reader-footer">
+    <span class="page-counter" id="page-counter">0 / 0</span>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="page-jump">
+      <input type="number" id="page-input" min="1" value="1">
+      <button class="btn-icon" id="btn-go" style="font-size:14px;padding:4px 8px;">Ir</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var COMIC_ID = "{{ comic_id }}";
+  var COMIC_TITLE = "{{ title }}";
+</script>
+<script src="/static/js/reader.js?v={{ asset_v }}"></script>
+</body>
+</html>

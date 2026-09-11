@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#16213e">
+  <title>Admin — HQ Reader</title>
+  <link rel="stylesheet" href="/static/css/style.css?v={{ asset_v }}">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+</head>
+<body>
+
+<div class="header">
+  <a href="/" class="btn-icon" title="Voltar">&#8592;</a>
+  <h1 style="font-size:16px;flex:1;margin:0 12px;">Painel Admin</h1>
+  <a href="/logout" class="btn-icon" title="Sair">&#9211;</a>
+</div>
+
+<div class="library">
+  <p style="color:#888;font-size:13px;margin-bottom:8px;">
+    {{ total_series }} série(s) · {{ total_comics }} HQ(s) na biblioteca
+  </p>
+
+  <div style="margin-bottom:16px;">
+    <p style="color:#888;font-size:12px;margin-bottom:4px;">
+      Armazenamento: {{ "%.1f"|format(disk_used_gb) }} GB usados de {{ "%.1f"|format(disk_total_gb) }} GB
+      ({{ "%.1f"|format(disk_free_gb) }} GB livres)
+    </p>
+    <div style="background:#2a2a3e;border-radius:4px;height:6px;overflow:hidden;">
+      <div style="background:{{ '#e94560' if disk_pct_used > 85 else '#4caf50' }};height:100%;width:{{ disk_pct_used }}%;"></div>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="auth-error" style="margin-bottom:16px;">{{ messages[0] }}</div>
+    {% endif %}
+  {% endwith %}
+
+  <form class="auth-card" style="margin:0;" method="post" action="/admin/upload" enctype="multipart/form-data">
+    <label class="auth-label" for="file">Arquivo (.cbz, .cbr ou .pdf)</label>
+    <input class="auth-input" type="file" id="file" name="file" accept=".cbz,.cbr,.pdf" required>
+
+    <label class="auth-label" for="publisher">Editora (opcional)</label>
+    <input class="auth-input" type="text" id="publisher" name="publisher" list="publisher-list" placeholder="Ex: Panini" autocomplete="off">
+    <datalist id="publisher-list">
+      {% for p in publishers %}<option value="{{ p }}">{% endfor %}
+    </datalist>
+
+    <label class="auth-label" for="series">Série (opcional)</label>
+    <input class="auth-input" type="text" id="series" name="series" list="series-list" placeholder="Ex: Homem-Aranha" autocomplete="off">
+    <datalist id="series-list">
+      {% for s in series_names %}<option value="{{ s }}">{% endfor %}
+    </datalist>
+
+    <button class="end-screen-btn" type="submit" style="margin-top:8px;">Enviar</button>
+  </form>
+
+  <h2 style="font-size:15px;margin:24px 0 12px;">Adicionar via link (blogspot)</h2>
+  <form class="auth-card" style="margin:0;" method="post" action="/admin/add-by-link">
+    <label class="auth-label" for="blog_url">Link do post do blogspot</label>
+    <input class="auth-input" type="url" id="blog_url" name="blog_url" placeholder="https://hqs-soquadrinhos.blogspot.com/..." required>
+
+    <label class="auth-label" for="publisher2">Editora (opcional)</label>
+    <input class="auth-input" type="text" id="publisher2" name="publisher" list="publisher-list" placeholder="Ex: DC" autocomplete="off">
+
+    <label class="auth-label" for="series2">Série</label>
+    <input class="auth-input" type="text" id="series2" name="series" list="series-list" placeholder="Ex: Lanterna Verde" autocomplete="off" required>
+
+    <button class="end-screen-btn" type="submit" style="margin-top:8px;">Buscar e baixar todos os links</button>
+  </form>
+
+  {% if recent_jobs %}
+  <h2 style="font-size:15px;margin:24px 0 12px;">Jobs recentes</h2>
+  <div id="jobs-container" data-poll-url="/admin/jobs.json">
+  {% for job in recent_jobs %}
+    <div class="auth-card" style="margin-bottom:12px;">
+      <p style="margin:0 0 8px;font-size:13px;color:#ccc;">
+        <strong>{{ job.series }}</strong>{% if job.publisher %} · {{ job.publisher }}{% endif %}
+        ({{ job.links | selectattr('status', 'equalto', 'done') | list | length }}/{{ job.links | length }} concluídos)
+        <br><span style="color:#888;">{{ job.blog_url }}</span>
+      </p>
+      <ul style="margin:0;padding-left:18px;font-size:12px;">
+        {% for link in job.links %}
+          <li>
+            {% if link.status == 'done' %}✅
+            {% elif link.status == 'error' %}❌
+            {% elif link.status == 'downloading' %}⏳
+            {% else %}⏸️
+            {% endif %}
+            {{ link.filename or link.url }}
+            {% if link.error_msg %}<br><span style="color:#e88;">{{ link.error_msg }}</span>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<script>
+(function () {
+  var container = document.getElementById('jobs-container');
+  if (!container) return;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function fmtBytes(n) {
+    if (!n) return '0 B';
+    var units = ['B', 'KB', 'MB', 'GB'];
+    var i = 0;
+    while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+    return n.toFixed(1) + ' ' + units[i];
+  }
+
+  function statusIcon(s) {
+    if (s === 'done') return '✅';
+    if (s === 'error') return '❌';
+    if (s === 'downloading') return '⏳';
+    return '⏸️';
+  }
+
+  function renderLink(link) {
+    var pct = link.bytes_total ? Math.round(100 * link.bytes_done / link.bytes_total) : 0;
+    var progress = '';
+    if (link.status === 'downloading') {
+      progress = '<div style="background:#333;border-radius:4px;height:6px;margin:4px 0;overflow:hidden;">' +
+        '<div style="background:#4caf50;height:100%;width:' + pct + '%;"></div></div>' +
+        '<span style="color:#888;">' + pct + '% (' + fmtBytes(link.bytes_done) + ' / ' + fmtBytes(link.bytes_total) + ')</span>';
+    }
+    var error = link.error_msg ? '<br><span style="color:#e88;">' + esc(link.error_msg) + '</span>' : '';
+    return '<li>' + statusIcon(link.status) + ' ' + esc(link.filename || link.url) + progress + error + '</li>';
+  }
+
+  function renderJob(job) {
+    var done = job.links.filter(function (l) { return l.status === 'done'; }).length;
+    var linksHtml = job.links.map(renderLink).join('');
+    return '<div class="auth-card" style="margin-bottom:12px;">' +
+      '<p style="margin:0 0 8px;font-size:13px;color:#ccc;">' +
+      '<strong>' + esc(job.series) + '</strong>' + (job.publisher ? ' · ' + esc(job.publisher) : '') +
+      ' (' + done + '/' + job.links.length + ' concluídos)' +
+      '<br><span style="color:#888;">' + esc(job.blog_url) + '</span></p>' +
+      '<ul style="margin:0;padding-left:18px;font-size:12px;">' + linksHtml + '</ul></div>';
+  }
+
+  function hasActive(jobs) {
+    return jobs.some(function (job) {
+      return job.links.some(function (l) { return l.status === 'pending' || l.status === 'downloading'; });
+    });
+  }
+
+  function poll() {
+    fetch(container.dataset.pollUrl)
+      .then(function (r) { return r.json(); })
+      .then(function (jobs) {
+        container.innerHTML = jobs.map(renderJob).join('');
+        if (hasActive(jobs)) setTimeout(poll, 3000);
+      })
+      .catch(function () { setTimeout(poll, 5000); });
+  }
+
+  poll();
+})();
+</script>
+
+</body>
+</html>
