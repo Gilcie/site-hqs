@@ -2,8 +2,11 @@
 .env
 
 # Biblioteca de HQs e cache gerado (conteúdo, não código)
-/comics/
-/cache/
+# As pastas em si ficam versionadas (com .gitkeep), só o conteúdo é ignorado
+/comics/*
+!/comics/.gitkeep
+/cache/*
+!/cache/.gitkeep
 *.cbr
 *.cbz
 
